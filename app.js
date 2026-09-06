@@ -1,4 +1,4 @@
-const state={main:new Set(),chance:null,draws:[],byMain:new Map(),byFull:new Map(),deferredPrompt:null,dataReady:false};
+const state={main:new Set(),chance:null,draws:[],byMain:new Map(),byFull:new Map(),mainFrequency:Array(50).fill(0),chanceFrequency:Array(11).fill(0),deferredPrompt:null,dataReady:false};
 const $=id=>document.getElementById(id);
 function key(nums){return [...nums].sort((a,b)=>a-b).join('-')}
 function renderBalls(){
@@ -19,8 +19,24 @@ function update(){
 function flash(){
   if(!state.dataReady){showError('Historique indisponible','Le Flash ne peut pas garantir une grille inédite tant que l’historique complet n’est pas chargé.');return}
   let candidate;
-  do{candidate=new Set();while(candidate.size<5)candidate.add(1+Math.floor(Math.random()*49))}while(isMainSeen(candidate));
-  state.main=candidate;state.chance=1+Math.floor(Math.random()*10);renderBalls();check(false);
+  do{candidate=new Set(weightedSample(5,49,state.mainFrequency))}while(isMainSeen(candidate));
+  state.main=candidate;
+  state.chance=weightedSample(1,10,state.chanceFrequency)[0];
+  renderBalls();check(false);
+}
+function weightedSample(count,max,frequencies){
+  const available=Array.from({length:max},(_,i)=>i+1);
+  const selected=[];
+  while(selected.length<count&&available.length){
+    const weights=available.map(n=>frequencies[n]+1);
+    const total=weights.reduce((sum,weight)=>sum+weight,0);
+    let cursor=Math.random()*total;
+    let selectedIndex=available.length-1;
+    for(let i=0;i<weights.length;i++){cursor-=weights[i];if(cursor<0){selectedIndex=i;break}}
+    selected.push(available[selectedIndex]);
+    available.splice(selectedIndex,1);
+  }
+  return selected;
 }
 function isMainSeen(nums){return state.byMain.has(key(nums))}
 function isFullSeen(nums,chance){return state.byFull.has(`${key(nums)}|${chance}`)}
@@ -57,7 +73,13 @@ async function loadData(){
     const r=await fetch('data/history.json',{cache:'no-store'});if(!r.ok)throw Error(`HTTP ${r.status}`);const data=await r.json();
     state.draws=Array.isArray(data.draws)?data.draws:[];
     if(state.draws.length<1000)throw Error(`historique incomplet (${state.draws.length} tirages)`);
-    for(const d of state.draws){const k=key(d.numbers);if(!state.byMain.has(k))state.byMain.set(k,[]);state.byMain.get(k).push(d);if(d.chance!=null)state.byFull.set(`${k}|${d.chance}`,d)}
+    for(const d of state.draws){
+      const k=key(d.numbers);
+      if(!state.byMain.has(k))state.byMain.set(k,[]);
+      state.byMain.get(k).push(d);
+      for(const n of d.numbers)if(n>=1&&n<=49)state.mainFrequency[n]++;
+      if(d.chance!=null&&d.chance>=1&&d.chance<=10){state.chanceFrequency[d.chance]++;state.byFull.set(`${k}|${d.chance}`,d)}
+    }
     state.dataReady=true;$('dataStatus').textContent=`${state.draws.length.toLocaleString('fr-FR')} tirages chargés · dernière mise à jour ${data.updatedAt||'—'}.`;
     $('dataStatus').classList.remove('error-status');
     update();
