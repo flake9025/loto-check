@@ -112,4 +112,4 @@ $('flashBtn').onclick=flash;$('checkBtn').onclick=()=>check();$('uniqueBtn').onc
 $('infoBtn').onclick=()=>$('infoDialog').showModal();$('closeInfo').onclick=()=>$('infoDialog').close();$('closeInfoBottom').onclick=()=>$('infoDialog').close();
 renderBalls();loadData();
 if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.matchMedia('(display-mode: standalone)').matches){$('installBtn').hidden=false;$('installBtn').textContent='Installer'}
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));
+if('serviceWorker' in navigator){let swRefreshing=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!swRefreshing){swRefreshing=true;window.location.reload()}});window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').then(reg=>{reg.update();if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});reg.onupdatefound=()=>{const nw=reg.installing;if(nw)nw.onstatechange=()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller)window.location.reload()}}})})}
