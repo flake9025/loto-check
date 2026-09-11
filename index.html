@@ -27,10 +27,11 @@
       <div class="section-head">
         <div>
           <h1>Ma grille</h1>
-          <p id="modeText">Choisissez 5 numéros, ou laissez le Flash privilégier les plus fréquents historiquement.</p>
+          <p id="modeText">Choisissez 5 numéros, ou laissez le Flash proposer les numéros les plus en retard.</p>
         </div>
         <button id="flashBtn" class="secondary">⚡ Flash</button>
       </div>
+      <p id="flashHint" class="flash-hint">Flash : 1<sup>er</sup> clic = les 5 numéros les plus attendus (en retard) + Chance la plus attendue. Clics suivants = les 5 suivants du classement. Chaque proposition est vérifiée inédite.</p>
 
       <div class="balls" id="mainBalls" aria-label="Numéros Loto"></div>
 
@@ -60,7 +61,8 @@
     <div class="dialog-head"><h2>Loto Unique</h2><button id="closeInfo" class="icon-btn" aria-label="Fermer">×</button></div>
     <p>Vérifiez si vos 5 numéros principaux ont déjà formé exactement la même combinaison dans l'historique disponible.</p>
     <p>Le numéro Chance est contrôlé séparément. « Unique » signifie uniquement <strong>inédit historiquement</strong> : cela ne donne pas davantage de chances au prochain tirage.</p>
-    <p class="muted">La grille Flash pondère les numéros selon leurs fréquences historiques, puis est régénérée tant que la combinaison de 5 numéros est déjà connue. Cela ne rend pas ces numéros plus probables au prochain tirage : chaque combinaison reste équiprobable.</p>
+    <p><strong>Flash « numéros attendus » :</strong> les numéros sont classés par retard (nombre de tirages depuis leur dernière sortie). 1<sup>er</sup> clic = les 5 plus en retard + la Chance la plus en retard. Chaque clic suivant propose les 5 suivants dans ce classement. Si cette fenêtre de 5 numéros est déjà sortie, le Flash avance automatiquement jusqu’à la première combinaison inédite.</p>
+    <p class="muted">Le retard n’est qu’un constat sur le passé : dans un tirage équitable, chaque combinaison reste équiprobable au prochain tirage.</p>
     <button id="closeInfoBottom" class="primary">Fermer</button>
   </dialog>
 
